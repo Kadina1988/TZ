@@ -39,9 +39,7 @@ def user_detail(request):
             'user': user
         }
     except ObjectDoesNotExist:
-        context={
-            'message': 'Пользователь удален или незалогинен'
-        }
+        return HttpResponseRedirect('/login/')
     
     return render(request, 'auth_user/user_detail.html', context=context)
     
@@ -63,7 +61,7 @@ def delete_user(request):
     user.is_active = False 
     user.save()
     logout(request)
-    # return HttpResponseRedirect('/register/')   
+    return HttpResponseRedirect('/register/')   
 
 
 @csrf_exempt
@@ -74,7 +72,7 @@ def login(request):
         try:
             user = User.objects.get(email=email, is_active=True)
         except:
-            return render(request, 'auth_user/login_form', {'message': 'Несуществующий пользователь'})
+            return render(request, 'auth_user/login_form.html', {'message': 'Несуществующий пользователь'})
         
         if user.password == password:
             request.session['user_id'] = user.pk 
@@ -83,6 +81,7 @@ def login(request):
             return render(request, 'auth_user/login_form.html', {'message': 'Неверный пароль'})
     
     return render(request, 'auth_user/login_form.html')
+
 
 def logout(request):
     request.session['user_id'] = None 
