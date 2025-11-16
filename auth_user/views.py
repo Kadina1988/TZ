@@ -1,12 +1,9 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import UpdateView 
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
 from auth_user.models import User 
-from auth_user.forms import RegisterForm
 
 
 import pdb 
