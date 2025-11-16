@@ -1,67 +1,90 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from auth_user.models import User 
 
 
 import pdb 
-@csrf_exempt
+
+@api_view(['POST'])
 def register(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password_conf = request.POST.get('password_confirmation')
-        if password == password_conf:
-            user = User.objects.create(
-                name=name,
-                email=email,
-                password=password
-            )
-            request.session['user_id'] = user.pk 
-            return HttpResponseRedirect("/user_detail/")
+    if request.data['password'] != request.data['password_confirm']:
+        return Response({'error': 'Пароли не совпадают'})
     
-    return render(request, 'auth_user/register_form.html')
+    user = User.objects.create(
+        name = request.data['name'],
+        email = request.data['email'],
+        password = request.data['password']
+    )
+    
+    return Response({
+        'user': {
+            'id': user.pk,
+            'name': user.name,
+            'email': user.email,
+        }
+    })
 
-
-def user_detail(request):
+@api_view()
+def user_detail(request, pk):
     try:
-        user = User.objects.get(pk=request.session['user_id'])
+        user = User.objects.get(pk=pk)
         if not user.is_active:
             raise ObjectDoesNotExist
 
-        context = {
-            'user': user
-        }
     except ObjectDoesNotExist:
-        return HttpResponseRedirect('/login/')
+        return Response({"error": "Не верный id или пользователь был удален"})
     
-    return render(request, 'auth_user/user_detail.html', context=context)
+    return Response({
+        'user': {
+            'id': user.pk,
+            'name': user.name,
+            'email': user.email
+        }
+    })
     
-@csrf_exempt
-def user_update(request):
-    if request.method == 'POST':
-        user = User.objects.get(pk=request.session['user_id'])
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        user.name = name 
-        user.email = email 
-        user.save()
-        return HttpResponseRedirect("/user_detail/")
-    return render(request, 'auth_user/user_update_form.html')
+
+@api_view(['PATCH', 'PUT'])
+def user_update(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        if not user.is_active:
+            raise ObjectDoesNotExist
+
+    except ObjectDoesNotExist:
+        return Response({"error": "Не верный id или пользователь был удален"})
     
+    user.name = request.data['name']
+    user.email = request.data['email']
+    user.save()
     
-def delete_user(request):
-    user = User.objects.get(pk=request.session['user_id'])
+    return Response({
+        'user': {
+            'id': user.pk,
+            'name': user.name,
+            'email': user.email
+        }
+    })    
+    
+
+@api_view(['DELETE'])    
+def delete_user(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        if not user.is_active:
+            raise ObjectDoesNotExist
+
+    except ObjectDoesNotExist:
+        return Response({"error": "Не верный id или пользователь был удален"})
+    
     user.is_active = False 
     user.save()
-    logout(request)
-    return HttpResponseRedirect('/register/')   
+    
+    return Response({"message": "Пользователь был удален"})   
 
 
-@csrf_exempt
+@api_view(["POST"])
 def login(request):
     if request.method == 'POST':
         email = request.POST.get("email")
