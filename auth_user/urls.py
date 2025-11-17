@@ -2,10 +2,16 @@ from django.urls import path
 from auth_user import views
 
 urlpatterns = [
-    path('register/', views.register, name='register'),
-    path('user_detail/<int:pk>/', views.user_detail, name='user_detail'),
-    path('user_update/<int:pk>/', views.user_update, name='update'),
-    path('user_delete/<int:pk>/', views.delete_user, name='delete'),
-    path('login/', views.login, name="login"),
-    path('logout/', views.logout, name="logout"),
+    path('register/', views.register),
+    path('user_detail/<int:pk>/', views.user_detail),
+    path('user_update/', views.user_update),
+    path('user_delete/', views.delete_user),
+    path('login/', views.login),
+    path('logout/', views.logout),
+    path('roles/', views.roles_list),
+    path('books/', views.books_list),
+    path('users/', views.users_list),
+    path('change_role/<int:pk>/', views.change_role),
+    path('book_detail/<int:pk>/', views.book_detail),
+    path('book_change/<int:pk>/', views.book_change),
 ]
