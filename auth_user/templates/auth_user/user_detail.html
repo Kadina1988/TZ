@@ -1,8 +1,0 @@
-{% extends "auth_user/base.html" %}
-{% block content %}
-    <h1>{{user.name}}</h1>
-    <h1>{{user.email}}</h1>
-   
-    <p><a href="{% url 'update'%}">Изменить</a></p>
-    <p><a href="{% url 'delete' %}">Удалить пользователя</a></p>
-{% endblock content %}

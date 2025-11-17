@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from auth_user.models import User 
+from auth_user.models import AccessToken, User 
 
 
 import pdb 
@@ -86,23 +86,22 @@ def delete_user(request, pk):
 
 @api_view(["POST"])
 def login(request):
-    if request.method == 'POST':
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        try:
-            user = User.objects.get(email=email, is_active=True)
-        except:
-            return render(request, 'auth_user/login_form.html', {'message': 'Несуществующий пользователь'})
-        
-        if user.password == password:
-            request.session['user_id'] = user.pk 
-            return HttpResponseRedirect('/user_detail/')
-        else:
-            return render(request, 'auth_user/login_form.html', {'message': 'Неверный пароль'})
+    try:
+        user = User.objects.get(email=request.data['email'], is_active=True)
+    except ObjectDoesNotExist:
+        return Response({"error": "Пользователь с таким email не найден"})
     
-    return render(request, 'auth_user/login_form.html')
+    if request.data['password'] == user.password:
+        AccessToken.objects.create(user=user)
+        return Response({'token': user.accesstoken.token})
+    else:
+        return Response({'error': 'Не верный пароль'})
 
 
+@api_view(["POST"])
 def logout(request):
-    request.session['user_id'] = None 
-    return HttpResponseRedirect('/login/')
+    token = request.headers['Authorization'].replace("Bearer ", '')
+    try:
+        AccessToken.objects.get(token=token).delete()
+    except:
+        return Response({"message": "Unauthorized"}, status=401)
