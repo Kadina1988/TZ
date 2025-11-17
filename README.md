@@ -5,7 +5,7 @@
 ### Запаск проекта 
 * Установить зависимости: `pip install -r requirements.txt`
 * Войти в виртуальную среду: `source venv/bin/activate`
-* Прогнать миграции: `python manage.py migrate`
+* Запустить миграции: `python manage.py migrate`
 * Запустить сервер: `python manage.py runserver`
 
 ### Основной функционал:
